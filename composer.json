@@ -1,5 +1,5 @@
 {
-  "name": "bosnadev/repositories",
+  "name": "eddremes/repositories",
   "description": "Laravel Repositories",
   "keywords": [
     "laravel",
@@ -11,12 +11,8 @@
   "licence": "MIT",
   "authors": [
     {
-      "name": "Mirza Pasic",
-      "email": "mirza.pasic@edu.fit.ba"
-    },
-    {
-      "name": "Maarten Paauw",
-      "email": "maartenpaauw@gmail.com"
+      "name": "Edisson Mendieta",
+      "email": "edisson.mendieta@gmail.com"
     }
   ],
   "require": {
