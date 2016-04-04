@@ -35,11 +35,9 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
      */
     protected $skipCriteria = false;
 
-    /**
-     * Prevents from overwriting same criteria in chain usage
-     * @var bool
-     */
-    protected $preventCriteriaOverwriting = true;
+    public $mensajes_ingreso;
+    public $mensajes_actualizacion;
+    public $mensajes_eliminacion;
 
     /**
      * @param App $app
@@ -51,6 +49,11 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
         $this->criteria = $collection;
         $this->resetScope();
         $this->makeModel();
+
+
+        $this->mensajes_ingreso = "Registro ingresado correctamente";
+        $this->mensajes_actualizacion = "Registro actualizado correctamente";
+        $this->mensajes_eliminacion = "Registro eliminado correctamente";
     }
 
     /**
@@ -70,21 +73,13 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
     }
 
     /**
-    * @param array $relations
-    * @return $this
-    */
-   public function with(array $relations)
-   {
-       $this->model = $this->model->with($relations);
-       return $this;
-   }
-
-    /**
      * @param  string $value
      * @param  string $key
      * @return array
      */
     public function lists($value, $key = null) {
+        /*        $this->applyCriteria();
+                return $this->model->lists($value, $key);*/
         $this->applyCriteria();
         $lists = $this->model->lists($value, $key);
         if(is_array($lists)) {
@@ -112,27 +107,27 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
     }
 
     /**
-     * save a model without massive assignment
-     *
-     * @param array $data
-     * @return bool
-     */
-    public function saveModel(array $data)
-    {
-        foreach ($data as $k => $v) {
-            $this->model->$k = $v;
-        }
-        return $this->model->save();
-    }
-
-    /**
      * @param array $data
      * @param $id
      * @param string $attribute
      * @return mixed
      */
     public function update(array $data, $id, $attribute="id") {
-        return $this->model->where($attribute, '=', $id)->update($data);
+
+        //return $this->model->where($attribute, '=', $id)->update($data);
+        try {
+            $this->model->where($attribute, '=', $id)->update($data);
+            return true;
+        }
+        catch(Exception $e) {
+            return false;
+        }
+
+
+    }
+
+    public function update_dirty(array $data, $id, $attribute="id") {
+        return $this->model->where($attribute, '=', $id)->first()->update($data);
     }
 
     /**
@@ -279,23 +274,7 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
      * @param Criteria $criteria
      * @return $this
      */
-    public function pushCriteria(Criteria $criteria)
-    {
-        if ($this->preventCriteriaOverwriting)
-        {
-            // Find existing criteria
-            $key = $this->criteria->search(function($item) use ($criteria)
-            {
-                return (is_object($item) AND (get_class($item) == get_class($criteria)));
-            });
-
-            // Remove old criteria
-            if (is_int($key))
-            {
-                $this->criteria->offsetUnset($key);
-            }
-        }
-
+    public function pushCriteria(Criteria $criteria) {
         $this->criteria->push($criteria);
         return $this;
     }
@@ -310,6 +289,26 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
         foreach($this->getCriteria() as $criteria) {
             if($criteria instanceof Criteria)
                 $this->model = $criteria->apply($this->model, $this);
+        }
+
+        return $this;
+    }
+
+
+    public function with($relations) {
+        if (is_string($relations)) $relations = func_get_args();
+
+        $this->with = $relations;
+
+        return $this;
+    }
+
+
+    protected function eagerLoadRelations() {
+        if(!is_null($this->with)) {
+            foreach ($this->with as $relation) {
+                $this->model->with($relation);
+            }
         }
 
         return $this;
