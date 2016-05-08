@@ -150,7 +150,14 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
      * @return mixed
      */
     public function update(array $data, $id, $attribute="id") {
-        return $this->model->where($attribute, '=', $id)->update($data);
+        //return $this->model->where($attribute, '=', $id)->update($data);
+        try {
+            $this->model->where($attribute, '=', $id)->update($data);
+            return true;
+        }
+        catch(Exception $e) {
+            return false;
+        }
     }
 
     /**
