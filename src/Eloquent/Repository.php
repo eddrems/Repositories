@@ -160,6 +160,12 @@ abstract class Repository implements RepositoryInterface, CriteriaInterface {
         }
     }
 
+
+    public function update_dirty(array $data, $id, $attribute="id") {
+        return $this->model->where($attribute, '=', $id)->first()->update($data);
+    }
+
+
     /**
      * @param  array  $data
      * @param  $id
